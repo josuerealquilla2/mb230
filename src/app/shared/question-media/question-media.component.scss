@@ -1,0 +1,8 @@
+.media-grid { display: grid; gap: 0.75rem; margin-top: 1.2rem; }
+.media-frame { position: relative; overflow: hidden; padding: 0; border: 1px solid var(--line); border-radius: 1rem; background: #f2f4f0; cursor: zoom-in; }
+.media-frame img { display: block; max-width: 100%; width: 100%; height: auto; max-height: 560px; object-fit: contain; }
+.media-frame span { position: absolute; right: 0.65rem; bottom: 0.65rem; padding: 0.4rem 0.6rem; border-radius: 0.55rem; background: rgb(16 24 39 / 88%); color: white; font-size: 0.68rem; font-weight: 700; }
+.lightbox { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 2rem; background: rgb(8 13 22 / 92%); backdrop-filter: blur(8px); cursor: zoom-out; }
+.lightbox img { max-width: min(1200px, 96vw); max-height: 90vh; object-fit: contain; border-radius: 0.7rem; background: white; box-shadow: 0 28px 100px #000; }
+.lightbox button { position: fixed; top: 1.2rem; right: 1.5rem; width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / 18%); border-radius: 50%; background: rgb(255 255 255 / 10%); color: white; font-size: 1.7rem; cursor: pointer; }
+

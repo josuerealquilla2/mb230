@@ -1,0 +1,114 @@
+<section class="hero">
+  <div class="hero__glow hero__glow--one"></div>
+  <div class="hero__glow hero__glow--two"></div>
+
+  <div class="hero__content">
+    <span class="eyebrow"><span></span> Microsoft Dynamics 365</span>
+    <h1>Domina MB-230.<br /><em>Pregunta a pregunta.</em></h1>
+    <p class="hero__lede">
+      Una experiencia de práctica clara y enfocada, con las preguntas en el orden original,
+      corrección inmediata y contexto para entender cada respuesta.
+    </p>
+
+    <div class="hero__actions">
+      @if (auth.isAuthenticated()) {
+        <a class="btn btn--mint" href="#start">Empezar una sesión <span aria-hidden="true">→</span></a>
+      } @else {
+        <a class="btn btn--mint" routerLink="/access">Crear cuenta gratis <span aria-hidden="true">→</span></a>
+      }
+      <a class="text-link" routerLink="/questions">Explorar preguntas</a>
+    </div>
+
+    <div class="trust-row" aria-label="Características">
+      <span><i>✓</i> Orden del PDF</span>
+      <span><i>✓</i> Explicaciones completas</span>
+      <span><i>✓</i> Continúa cualquier día</span>
+    </div>
+  </div>
+
+  <aside class="hero-card" aria-label="Resumen del examen">
+    <div class="hero-card__top">
+      <span class="document-icon" aria-hidden="true">▤</span>
+      <span class="live-label"><i></i> Dataset verificado</span>
+    </div>
+    @if (loading()) {
+      <div class="skeleton hero-card__title"></div>
+      <div class="skeleton hero-card__line"></div>
+      <div class="skeleton hero-card__line hero-card__line--short"></div>
+    } @else if (exam(); as currentExam) {
+      <span class="hero-card__kicker">Examen oficial</span>
+      <h2>{{ currentExam.title }}</h2>
+      <p>{{ currentExam.description }}</p>
+      <div class="hero-card__stats">
+        <div><strong>{{ currentExam.question_count }}</strong><span>preguntas</span></div>
+        <div><strong>5</strong><span>formatos</span></div>
+        <div><strong>100%</strong><span>en orden</span></div>
+      </div>
+    }
+  </aside>
+</section>
+
+<section class="start-section" id="start">
+  <div class="section-heading">
+    <span class="eyebrow eyebrow--dark">Tu próxima sesión</span>
+    <h2>Elige el ritmo. Nosotros mantenemos el foco.</h2>
+    <p>Practica un bloque corto o las 463 preguntas. Tu cuenta conserva automáticamente la posición.</p>
+  </div>
+
+  <div class="start-grid">
+    <form class="session-builder" [formGroup]="sessionForm" (ngSubmit)="startSession()">
+      <div class="session-builder__head">
+        <div>
+          <span class="step-number">01</span>
+          <h3>Configura tu recorrido</h3>
+        </div>
+        <span class="sequential-pill">Modo secuencial</span>
+      </div>
+
+      <div class="preset-row" aria-label="Sesiones rápidas">
+        <button type="button" (click)="setPreset(10)">10 preguntas</button>
+        <button type="button" (click)="setPreset(20)">20 preguntas</button>
+        <button type="button" (click)="setPreset(50)">50 preguntas</button>
+        <button type="button" (click)="setPreset(463)">Examen completo</button>
+      </div>
+
+      <div class="range-fields">
+        <div class="field">
+          <label for="fromOrder">Desde la pregunta</label>
+          <input id="fromOrder" type="number" min="1" max="463" formControlName="fromOrder" />
+        </div>
+        <span aria-hidden="true">→</span>
+        <div class="field">
+          <label for="toOrder">Hasta la pregunta</label>
+          <input id="toOrder" type="number" min="1" max="463" formControlName="toOrder" />
+        </div>
+      </div>
+
+      <button class="btn btn--primary submit-button" type="submit" [disabled]="starting()">
+        @if (starting()) { Preparando sesión… } @else { Comenzar práctica <span>→</span> }
+      </button>
+    </form>
+
+    <div class="side-stack">
+      @if (!auth.isAuthenticated()) {
+        <a class="resume-card" routerLink="/access">
+          <span class="resume-card__icon">○</span>
+          <span><small>Cuenta gratuita</small><strong>Guarda tu progreso cada día</strong></span>
+          <span aria-hidden="true">→</span>
+        </a>
+      } @else if (activeSessions().length) {
+        <a class="resume-card" [routerLink]="['/practice', activeSessions()[0].id]">
+          <span class="resume-card__icon">↗</span>
+          <span><small>{{ activeSessions()[0].answered_items }} de {{ activeSessions()[0].total_items }} respondidas</small><strong>Continuar donde lo dejaste</strong></span>
+          <span aria-hidden="true">→</span>
+        </a>
+      }
+
+      <article class="insight-card">
+        <span class="insight-card__label">Consejo de estudio</span>
+        <blockquote>“No memorices la letra. Lee la explicación y entiende por qué las demás opciones no encajan.”</blockquote>
+        <div class="insight-card__footer"><span>F</span> Método Focus</div>
+      </article>
+    </div>
+  </div>
+</section>

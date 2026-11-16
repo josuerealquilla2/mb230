@@ -1,0 +1,50 @@
+<a class="skip-link" href="#main-content">Saltar al contenido</a>
+
+<header class="site-header">
+  <a class="brand" routerLink="/" aria-label="MB-230 Focus, inicio">
+    <span class="brand__mark" aria-hidden="true">F</span>
+    <span><strong>MB-230</strong><small>Focus</small></span>
+  </a>
+
+  <nav class="desktop-nav" aria-label="Navegación principal">
+    <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+    <a routerLink="/questions" routerLinkActive="is-active">Preguntas</a>
+    @if (auth.isAuthenticated()) {
+      <a routerLink="/settings" routerLinkActive="is-active">Configuración</a>
+    }
+  </nav>
+
+  <div class="header-actions">
+    <button class="icon-button" type="button" (click)="toggleTheme()" aria-label="Cambiar tema">
+      <span class="theme-light" aria-hidden="true">☀</span><span class="theme-dark" aria-hidden="true">☾</span>
+    </button>
+    @if (auth.user(); as user) {
+      <div class="user-menu">
+        <span class="user-avatar">{{ user.username.slice(0, 1).toUpperCase() }}</span>
+        <span class="user-name d-none d-md-inline">{{ user.username }}</span>
+        <button type="button" (click)="logout()">Salir</button>
+      </div>
+    } @else {
+      <a class="access-link" routerLink="/access">Entrar</a>
+    }
+  </div>
+
+  <nav class="mobile-nav" aria-label="Navegación móvil">
+    <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }"><span>⌂</span>Inicio</a>
+    <a routerLink="/questions" routerLinkActive="is-active"><span>☷</span>Preguntas</a>
+    @if (auth.isAuthenticated()) {
+      <a routerLink="/settings" routerLinkActive="is-active"><span>⚙</span>Ajustes</a>
+    } @else {
+      <a routerLink="/access" routerLinkActive="is-active"><span>○</span>Entrar</a>
+    }
+  </nav>
+</header>
+
+<main id="main-content"><router-outlet /></main>
+
+@if (notifications.notice(); as notice) {
+  <div class="toast-message toast-message--{{ notice.tone }}" role="status" aria-live="polite">
+    <span>{{ notice.message }}</span>
+    <button type="button" (click)="notifications.dismiss()" aria-label="Cerrar notificación">×</button>
+  </div>
+}

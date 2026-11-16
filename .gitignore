@@ -1,0 +1,33 @@
+# Dependencies and build output
+/node_modules/
+/dist/
+/.angular/
+/.npm-cache/
+/.cache/
+/out-tsc/
+/coverage/
+
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+
+# Hosting state generated locally
+/.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local archives
+*.zip

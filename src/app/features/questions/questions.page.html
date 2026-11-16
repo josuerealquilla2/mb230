@@ -1,0 +1,66 @@
+<section class="page-intro">
+  <span class="page-intro__eyebrow">Biblioteca MB-230</span>
+  <h1>Explora las preguntas</h1>
+  <p>Revisa el enunciado y el formato sin revelar la solución. Para responder y ver explicaciones, inicia una sesión desde la página principal.</p>
+</section>
+
+<section class="browser-layout">
+  <aside class="filters">
+    <div class="filters__heading"><span>Filtros</span><small>API Django</small></div>
+    <form [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+      <div class="field">
+        <label for="questionType">Tipo de pregunta</label>
+        <select id="questionType" formControlName="questionType">
+          <option value="">Todos los formatos</option>
+          @for (type of typeOptions; track type) { <option [value]="type">{{ typeLabels[type] }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="pageSize">Resultados por carga</label>
+        <select id="pageSize" formControlName="limit">
+          <option [ngValue]="6">6 preguntas</option>
+          <option [ngValue]="12">12 preguntas</option>
+          <option [ngValue]="24">24 preguntas</option>
+        </select>
+      </div>
+      <button class="btn btn--primary" type="submit">Aplicar filtros</button>
+    </form>
+    <div class="filters__note"><span>i</span><p>Las respuestas permanecen ocultas en esta vista para evitar pistas accidentales.</p></div>
+  </aside>
+
+  <div class="results">
+    <div class="results__bar"><strong>{{ questions().length }} cargadas</strong><span>Orden original del PDF</span></div>
+
+    @for (question of questions(); track question.id) {
+      <article class="question-card">
+        <header>
+          <span class="question-number">{{ question.pdf_order.toString().padStart(3, '0') }}</span>
+          <span class="type-badge type-badge--{{ question.question_type }}">{{ labelFor(question.question_type) }}</span>
+          <span class="page-ref">pág. {{ question.source_pages.start }}</span>
+        </header>
+        <p class="prompt">{{ question.prompt_text }}</p>
+        <app-question-media [media]="question.question_media" [alt]="'Recurso visual de la pregunta ' + question.pdf_order" />
+        @if (question.options.length) {
+          <div class="option-preview">
+            @for (option of question.options; track option.key) {
+              <div><span>{{ option.key }}</span><p>{{ option.text }}</p></div>
+            }
+          </div>
+        }
+      </article>
+    } @empty {
+      @if (!loading()) { <div class="empty-state"><span>⌕</span><h2>Sin resultados</h2><p>Prueba con otro tipo de pregunta.</p></div> }
+    }
+
+    @if (loading()) {
+      <div class="loading-card"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+    }
+
+    @if (nextAfterOrder() !== null && questions().length) {
+      <button class="btn btn--ghost load-more" type="button" (click)="load()" [disabled]="loading()">
+        {{ loading() ? 'Cargando…' : 'Cargar más preguntas' }}
+      </button>
+    }
+  </div>
+</section>
+

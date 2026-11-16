@@ -1,0 +1,48 @@
+<section class="settings-page container py-5 py-lg-6">
+  <a class="back-link" routerLink="/">← Volver al inicio</a>
+  <header class="settings-header">
+    <span class="eyebrow">Tu experiencia</span>
+    <h1>Configuración</h1>
+    <p>Elige cómo quieres recorrer el examen. Tus preferencias quedarán guardadas en tu cuenta.</p>
+  </header>
+
+  @if (loading()) {
+    <div class="settings-card"><div class="skeleton py-4"></div></div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" class="settings-card">
+      <section>
+        <div><span class="setting-number">01</span><div><h2>Apariencia</h2><p>Usa el tema del dispositivo o fija uno concreto.</p></div></div>
+        <div class="choice-grid theme-grid">
+          @for (item of [{value: 'system', label: 'Sistema'}, {value: 'light', label: 'Claro'}, {value: 'dark', label: 'Oscuro'}]; track item.value) {
+            <label [class.selected]="form.controls.theme.value === item.value">
+              <input type="radio" formControlName="theme" [value]="item.value" (change)="previewTheme()" />
+              <span class="theme-swatch theme-swatch--{{ item.value }}"></span>
+              <strong>{{ item.label }}</strong>
+            </label>
+          }
+        </div>
+      </section>
+
+      <section>
+        <div><span class="setting-number">02</span><div><h2>Recorrido</h2><p>Define el tamaño habitual y lo que quieres ver durante el estudio.</p></div></div>
+        <div class="choice-grid size-grid">
+          @for (size of [10, 20, 50, 463]; track size) {
+            <label [class.selected]="form.controls.default_session_size.value === size">
+              <input type="radio" formControlName="default_session_size" [value]="size" />
+              <strong>{{ size === 463 ? 'Completo' : size }}</strong><small>{{ size === 463 ? '463 preguntas' : 'preguntas' }}</small>
+            </label>
+          }
+        </div>
+        <label class="switch-row">
+          <span><strong>Mostrar traducción</strong><small>Coloca el texto español junto al original cuando esté disponible.</small></span>
+          <input class="form-check-input" type="checkbox" role="switch" formControlName="show_translation" />
+        </label>
+        <label class="switch-row">
+          <span><strong>Recorrido inicial completado</strong><small>Puedes desmarcarlo para volver a ver las indicaciones de uso.</small></span>
+          <input class="form-check-input" type="checkbox" role="switch" formControlName="onboarding_completed" />
+        </label>
+      </section>
+      <button class="btn btn--primary save-button" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar configuración' }}</button>
+    </form>
+  }
+</section>

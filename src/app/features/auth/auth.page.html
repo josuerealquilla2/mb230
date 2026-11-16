@@ -1,0 +1,53 @@
+<main class="auth-layout">
+  <section class="auth-story d-none d-lg-flex">
+    <a class="story-brand" routerLink="/">MB-230 <span>Focus</span></a>
+    <div>
+      <span class="eyebrow">Tu progreso, siempre contigo</span>
+      <h1>Estudia hoy.<br>Continúa mañana.</h1>
+      <p>Una cuenta sencilla guarda tu recorrido por las 463 preguntas, tus resultados y tu configuración.</p>
+    </div>
+    <ul>
+      <li><span>✓</span> Sin correo electrónico</li>
+      <li><span>✓</span> Solo usuario y contraseña</li>
+      <li><span>✓</span> Progreso sincronizado</li>
+    </ul>
+  </section>
+
+  <section class="auth-panel">
+    <a class="mobile-brand d-lg-none" routerLink="/">MB-230 Focus</a>
+    <div class="auth-card">
+      <div class="mode-switch" role="tablist" aria-label="Tipo de acceso">
+        <button type="button" [class.active]="mode() === 'login'" (click)="changeMode('login')">Entrar</button>
+        <button type="button" [class.active]="mode() === 'register'" (click)="changeMode('register')">Crear cuenta</button>
+      </div>
+
+      <header>
+        <span class="auth-kicker">{{ mode() === 'login' ? 'Bienvenido de nuevo' : 'Empieza en segundos' }}</span>
+        <h2>{{ mode() === 'login' ? 'Continúa donde lo dejaste' : 'Crea tu espacio de estudio' }}</h2>
+        <p>{{ mode() === 'login' ? 'Introduce tus datos para recuperar tu progreso.' : 'No pedimos correo ni datos personales.' }}</p>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="field">
+          <label for="username">Usuario</label>
+          <input id="username" type="text" formControlName="username" autocomplete="username" placeholder="Tu usuario" />
+          @if (form.controls.username.touched && form.controls.username.invalid) {
+            <small>Escribe entre 3 y 40 caracteres.</small>
+          }
+        </div>
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <input id="password" type="password" formControlName="password" [autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'" placeholder="Mínimo 8 caracteres" />
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <small>La contraseña debe tener al menos 8 caracteres.</small>
+          }
+        </div>
+        <button class="btn btn--primary w-100" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Un momento…' : mode() === 'login' ? 'Entrar y continuar' : 'Crear cuenta' }}
+          @if (!submitting()) { <span aria-hidden="true">→</span> }
+        </button>
+      </form>
+      <p class="privacy-note">Tu contraseña se almacena cifrada por Django. Nunca guardamos el texto original.</p>
+    </div>
+  </section>
+</main>

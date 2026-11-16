@@ -1,0 +1,110 @@
+<section class="practice-shell" [class.practice-shell--collapsed]="panelCollapsed()">
+  @if (session(); as currentSession) {
+    @if (!panelCollapsed()) {
+    <aside class="session-panel" aria-label="Progreso del examen">
+      <div class="panel-actions">
+        <a class="back-link" routerLink="/">← Guardar y salir</a>
+        <button class="panel-hide" type="button" (click)="toggleSessionPanel()" aria-label="Ocultar panel de progreso" title="Ocultar panel">←</button>
+      </div>
+      <div class="session-panel__title"><span>MB-230</span><h2>Examen completo</h2><small>Progreso guardado en tu cuenta</small></div>
+      <div class="progress-ring" [style.--progress]="progress() + '%'">
+        <div><strong>{{ progress() }}%</strong><span>completado</span></div>
+      </div>
+      <dl>
+        <div><dt>Respondidas</dt><dd>{{ currentSession.answered_items }} / {{ currentSession.total_items }}</dd></div>
+        <div><dt>Correctas</dt><dd>{{ currentSession.correct_items }}</dd></div>
+        <div><dt>Posición</dt><dd>{{ currentSession.current_position }}</dd></div>
+      </dl>
+      <a class="settings-link" routerLink="/settings">⚙ Configurar recorrido</a>
+      <p class="session-tip"><span>✦</span> Puedes salir cuando quieras. Volverás exactamente a esta pregunta.</p>
+    </aside>
+    }
+
+    @if (panelCollapsed()) {
+      <button class="panel-reveal" type="button" (click)="toggleSessionPanel()" aria-label="Mostrar panel de progreso" title="Mostrar panel de progreso">
+        <span aria-hidden="true">☰</span><strong>Progreso</strong><small>{{ progress() }}%</small>
+      </button>
+    }
+
+    <div class="practice-main">
+      @if (showSummary()) {
+        <section class="summary-card">
+          <span class="summary-card__icon">✓</span><span class="summary-card__eyebrow">Recorrido terminado</span>
+          <h1>Has completado<br>el examen.</h1>
+          <p>Resultado: <strong>{{ currentSession.correct_items }}</strong> respuestas correctas de <strong>{{ currentSession.total_items }}</strong>.</p>
+          <div class="summary-card__actions"><a class="btn btn--primary" routerLink="/">Crear otro recorrido</a><a class="btn btn--ghost" routerLink="/questions">Repasar preguntas</a></div>
+        </section>
+      } @else if (loading()) {
+        <section class="question-skeleton"><div class="skeleton short"></div><div class="skeleton title"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton option"></div><div class="skeleton option"></div></section>
+      } @else if (question(); as currentQuestion) {
+        <header class="exam-toolbar">
+          <div><span class="question-index">Pregunta {{ currentQuestion.pdf_order }} de 463</span><span class="type-badge">{{ typeLabels[currentQuestion.question_type] }}</span></div>
+          <div class="save-state"><span></span> Progreso guardado</div>
+        </header>
+
+        <article class="exam-card">
+          <div class="language-grid" [class.language-grid--single]="!preferences.preferences().show_translation">
+            <section class="language-panel language-panel--original">
+              <header><span>EN</span><div><strong>Pregunta original</strong><small>Texto exacto del PDF</small></div></header>
+              <p>{{ currentQuestion.prompt_text }}</p>
+              <app-question-media [media]="currentQuestion.question_media" [alt]="'Pregunta ' + currentQuestion.pdf_order" />
+            </section>
+
+            @if (preferences.preferences().show_translation) {
+              <section class="language-panel language-panel--translation">
+                <header><span>ES</span><div><strong>Traducción al español</strong><small>Traducción automática · el original se conserva</small></div></header>
+                @if (currentQuestion.prompt_text_es) {
+                  <p>{{ currentQuestion.prompt_text_es }}</p>
+                } @else {
+                  <div class="translation-pending"><strong>Traducción no disponible</strong><p>Conservamos el original para no alterar su significado.</p></div>
+                }
+              </section>
+            }
+          </div>
+
+          <section class="answers-section">
+            <header><span class="section-number">02</span><div><h2>Selecciona tu respuesta</h2><p>Elige la opción que consideres correcta.</p></div></header>
+            @if (currentQuestion.options.length) {
+              <fieldset class="option-list" [disabled]="!!feedback()">
+                <legend class="visually-hidden">Opciones de respuesta</legend>
+                @for (option of currentQuestion.options; track option.key) {
+                  <button type="button" class="option option--{{ optionState(option.key) }}" [attr.aria-pressed]="isSelected(option.key)" (click)="toggleOption(option.key)">
+                    <span class="option__key">{{ option.key }}</span>
+                    <span class="option__copy"><strong>{{ option.text }}</strong>@if (preferences.preferences().show_translation && option.text_es) { <small>{{ option.text_es }}</small> }</span>
+                    <span class="option__indicator" aria-hidden="true">@if (optionState(option.key) === 'correct') { ✓ } @else if (optionState(option.key) === 'incorrect') { × }</span>
+                  </button>
+                }
+              </fieldset>
+              @if (currentQuestion.question_type === 'multiple_choice' && !feedback()) { <p class="selection-hint">Puedes seleccionar más de una opción.</p> }
+            } @else if (!feedback()) {
+              <div class="reveal-note"><span>◎</span><div><strong>Pregunta visual</strong><p>Observa el recurso antes de revelar la respuesta.</p></div></div>
+            }
+            @if (!feedback()) {
+              <button class="btn btn--primary answer-button" type="button" [disabled]="!canSubmit()" (click)="submit()">{{ submitting() ? 'Comprobando…' : currentQuestion.interaction.grading_mode === 'reveal_only' ? 'Revelar respuesta' : 'Comprobar respuesta' }}</button>
+            }
+          </section>
+        </article>
+
+        @if (feedback(); as result) {
+          <section class="feedback feedback--{{ result.is_correct === true ? 'success' : result.is_correct === false ? 'error' : 'neutral' }}">
+            <header><span class="feedback__icon">{{ result.is_correct === true ? '✓' : result.is_correct === false ? '×' : '◎' }}</span><div><span>Resultado</span><h2>{{ result.is_correct === true ? 'Respuesta correcta' : result.is_correct === false ? 'Vamos a revisarlo' : 'Compara tu respuesta' }}</h2></div></header>
+            @if (result.source_answer.option_keys.length) { <p class="correct-answer">Respuesta publicada: <strong>{{ result.source_answer.option_keys.join(', ') }}</strong></p> }
+            @if (result.explanation_raw) { <div class="feedback__section"><h3>Explicación original</h3><p>{{ result.explanation_raw }}</p></div> }
+            @if (result.community_comments.length) {
+              <section class="comments-section">
+                <header><span class="section-number">03</span><div><h3>Opiniones de la comunidad</h3><p>Comentarios conservados exactamente como aparecen en la fuente.</p></div></header>
+                <div class="comments__list">
+                  @for (comment of result.community_comments; track comment.position) {
+                    <article><span>{{ comment.position }}</span><div><p>{{ comment.raw_text }}</p>@if (preferences.preferences().show_translation && comment.raw_text_es) { <p class="comment-translation"><strong>ES</strong> {{ comment.raw_text_es }}</p> }</div></article>
+                  }
+                </div>
+              </section>
+            }
+            @if (result.answer_media.length) { <details class="source-details"><summary>Ver material original de respuesta</summary><app-question-media [media]="result.answer_media" alt="Material original de la respuesta" /></details> }
+            <button class="btn btn--primary next-button" type="button" (click)="next()">{{ result.session_status === 'completed' ? 'Ver resumen' : 'Guardar y continuar' }} →</button>
+          </section>
+        }
+      }
+    </div>
+  }
+</section>

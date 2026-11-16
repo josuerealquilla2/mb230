@@ -1,0 +1,18 @@
+@if (media().length) {
+  <div class="media-grid">
+    @for (item of media(); track item.sha256) {
+      <button class="media-frame" type="button" (click)="expanded.set(item)" aria-label="Ampliar imagen">
+        <img [src]="item.url" [alt]="alt()" loading="lazy" />
+        <span aria-hidden="true">Ampliar ↗</span>
+      </button>
+    }
+  </div>
+}
+
+@if (expanded(); as item) {
+  <div class="lightbox" role="dialog" aria-modal="true" aria-label="Imagen ampliada" (click)="expanded.set(null)">
+    <button type="button" (click)="expanded.set(null)" aria-label="Cerrar">×</button>
+    <img [src]="item.url" [alt]="alt()" />
+  </div>
+}
+

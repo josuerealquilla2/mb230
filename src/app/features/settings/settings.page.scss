@@ -1,0 +1,27 @@
+.py-lg-6 { padding-top: 5rem !important; padding-bottom: 6rem !important; }
+.back-link { color: var(--slate); font-size: .8rem; font-weight: 700; text-decoration: none; }
+.settings-header { max-width: 680px; margin: 2.5rem 0; }
+.settings-header h1 { margin: .4rem 0 .8rem; font: 800 clamp(2.5rem, 6vw, 4.6rem)/1 var(--font-display); letter-spacing: -.07em; }
+.settings-header p { color: var(--slate); line-height: 1.7; }
+.settings-card { display: grid; gap: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 1.5rem; background: var(--surface); box-shadow: var(--shadow-sm); }
+.settings-card > section { padding: clamp(1.25rem, 4vw, 2.5rem); border-bottom: 1px solid var(--line); }
+.settings-card > section > div:first-child { display: flex; align-items: flex-start; gap: 1rem; }
+.setting-number { display: grid; place-items: center; flex: 0 0 42px; height: 42px; border-radius: .8rem; background: var(--deep); color: var(--mint); font-weight: 800; }
+h2 { margin: 0; font: 800 1.25rem var(--font-display); }
+section p { margin: .35rem 0 0; color: var(--slate); font-size: .82rem; }
+.choice-grid { display: grid; gap: .7rem; margin-top: 1.6rem; }
+.theme-grid { grid-template-columns: repeat(3, 1fr); }
+.size-grid { grid-template-columns: repeat(4, 1fr); }
+.choice-grid label { display: grid; gap: .55rem; padding: 1rem; border: 1px solid var(--line); border-radius: 1rem; cursor: pointer; }
+.choice-grid label.selected { border-color: var(--blue); box-shadow: 0 0 0 3px rgb(84 120 255 / 10%); }
+.choice-grid input { position: absolute; opacity: 0; pointer-events: none; }
+.choice-grid small { color: var(--slate); }
+.theme-swatch { height: 52px; border: 1px solid var(--line); border-radius: .65rem; background: linear-gradient(135deg, #fff 60%, #101827 61%); }
+.theme-swatch--light { background: #f7f8f4; }
+.theme-swatch--dark { background: #101827; }
+.switch-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 1rem; padding: 1rem; border-radius: 1rem; background: var(--surface-soft); }
+.switch-row strong, .switch-row small { display: block; }
+.switch-row small { margin-top: .25rem; color: var(--slate); }
+.form-check-input { flex: 0 0 auto; width: 2.5rem; height: 1.35rem; }
+.save-button { margin: 1.4rem; }
+@media (max-width: 767.98px) { .theme-grid { grid-template-columns: 1fr; } .size-grid { grid-template-columns: 1fr 1fr; } }
