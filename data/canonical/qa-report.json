@@ -1,0 +1,28 @@
+{
+  "manifest": {
+    "schema_version": "1.0",
+    "dataset_sha256": "9a32c14a93e374d9505c917f5d2c177a5d6ff6fde33766f9a19916f15279bd81",
+    "questions_sha256": "a380ced3c30119ae278927c89048d2ee3b2127187efca897f05fbf61d2b9df74",
+    "question_count": 463,
+    "exam": {
+      "slug": "mb-230",
+      "title": "Microsoft MB-230 Practice Questions",
+      "description": "Questions preserved in the order and wording of the supplied PDF."
+    },
+    "source": {
+      "filename": "mb-230_Completo.pdf",
+      "sha256": "42a41ca027fdcdff2f595600305b49a80a25013c8e380b3104aac58b0b01d152",
+      "page_count": 997
+    },
+    "type_counts": {
+      "drag_drop": 94,
+      "hotspot": 93,
+      "multiple_choice": 69,
+      "single_choice": 166,
+      "yes_no": 41
+    },
+    "media_count": 1754,
+    "issues_count": 0
+  },
+  "issues": []
+}

@@ -1,0 +1,15 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite:////app/runtime/django.sqlite3
+      DJANGO_DEBUG: "true"
+      ALLOWED_HOSTS: 127.0.0.1,localhost
+      CORS_ALLOWED_ORIGINS: '["http://localhost:4200","http://127.0.0.1:4200"]'
+    volumes:
+      - mb230-data:/app/runtime
+
+volumes:
+  mb230-data:

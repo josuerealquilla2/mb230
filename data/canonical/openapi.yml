@@ -1,0 +1,563 @@
+openapi: 3.0.3
+info:
+  title: MB-230 Practice API
+  version: 2.0.0
+  description: API Django para practicar las 463 preguntas en el orden del PDF.
+paths:
+  /api/v1/exams:
+    get:
+      operationId: api_v1_exams_list
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Exam'
+          description: ''
+  /api/v1/exams/{slug}:
+    get:
+      operationId: api_v1_exams_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exam'
+          description: ''
+  /api/v1/exams/{slug}/questions:
+    get:
+      operationId: api_v1_exams_questions_retrieve
+      parameters:
+      - in: query
+        name: after_order
+        schema:
+          type: integer
+        description: Devuelve preguntas posteriores a este orden
+      - in: query
+        name: limit
+        schema:
+          type: integer
+        description: Cantidad entre 1 y 100
+      - in: query
+        name: question_type
+        schema:
+          type: string
+          enum:
+          - drag_drop
+          - hotspot
+          - multiple_choice
+          - single_choice
+          - yes_no
+        description: Tipo de pregunta
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionPage'
+          description: ''
+  /api/v1/practice-sessions:
+    post:
+      operationId: api_v1_practice_sessions_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PracticeSessionCreateRequest'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PracticeSession'
+          description: ''
+  /api/v1/practice-sessions/{session_id}:
+    get:
+      operationId: api_v1_practice_sessions_retrieve
+      parameters:
+      - in: path
+        name: session_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PracticeSession'
+          description: ''
+  /api/v1/practice-sessions/{session_id}/answers:
+    post:
+      operationId: api_v1_practice_sessions_answers_create
+      parameters:
+      - in: path
+        name: session_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerSubmissionRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnswerFeedback'
+          description: ''
+  /api/v1/practice-sessions/{session_id}/next:
+    get:
+      operationId: api_v1_practice_sessions_next_retrieve
+      parameters:
+      - in: path
+        name: session_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionPublic'
+          description: ''
+  /api/v1/questions/{question_id}:
+    get:
+      operationId: api_v1_questions_retrieve
+      parameters:
+      - in: path
+        name: question_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionPublic'
+          description: ''
+  /health/live:
+    get:
+      operationId: health_live_retrieve
+      tags:
+      - health
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: ''
+  /health/ready:
+    get:
+      operationId: health_ready_retrieve
+      tags:
+      - health
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: ''
+components:
+  schemas:
+    AnswerFeedback:
+      type: object
+      properties:
+        question_id:
+          type: string
+        is_correct:
+          type: boolean
+          nullable: true
+        grading_mode:
+          type: string
+        source_answer: {}
+        source_answer_raw:
+          type: string
+        explanation_raw:
+          type: string
+        community_discussion_raw:
+          type: string
+        references:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reference'
+        community_comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunityComment'
+        answer_media:
+          type: array
+          items:
+            $ref: '#/components/schemas/Media'
+        session_status:
+          type: string
+        next_position:
+          type: integer
+          nullable: true
+      required:
+      - answer_media
+      - community_comments
+      - community_discussion_raw
+      - explanation_raw
+      - grading_mode
+      - is_correct
+      - next_position
+      - question_id
+      - references
+      - session_status
+      - source_answer
+      - source_answer_raw
+    AnswerSubmissionRequest:
+      type: object
+      properties:
+        question_id:
+          type: string
+          minLength: 1
+          maxLength: 40
+        response: {}
+      required:
+      - question_id
+    CommunityComment:
+      type: object
+      properties:
+        position:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        raw_text:
+          type: string
+        selected_answer:
+          type: string
+          nullable: true
+          maxLength: 32
+        source_pages: {}
+      required:
+      - position
+      - raw_text
+    Exam:
+      type: object
+      properties:
+        slug:
+          type: string
+          maxLength: 80
+          pattern: ^[-a-zA-Z0-9_]+$
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        question_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        dataset_sha256:
+          type: string
+          maxLength: 64
+        source_sha256:
+          type: string
+          maxLength: 64
+      required:
+      - dataset_sha256
+      - question_count
+      - slug
+      - source_sha256
+      - title
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+        dataset_ready:
+          type: boolean
+        question_count:
+          type: integer
+      required:
+      - status
+    Media:
+      type: object
+      properties:
+        position:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        role:
+          type: string
+          maxLength: 32
+        url:
+          type: string
+          readOnly: true
+        sha256:
+          type: string
+          maxLength: 64
+        mime_type:
+          type: string
+          maxLength: 64
+        width:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        height:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        source_page:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - height
+      - mime_type
+      - position
+      - role
+      - sha256
+      - source_page
+      - url
+      - width
+    ModeEnum:
+      enum:
+      - sequential
+      type: string
+      description: '* `sequential` - sequential'
+    Option:
+      type: object
+      properties:
+        key:
+          type: string
+          maxLength: 16
+        position:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        text:
+          type: string
+      required:
+      - key
+      - position
+      - text
+    PracticeSession:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        exam_slug:
+          type: string
+        mode:
+          type: string
+        current_position:
+          type: integer
+        total_items:
+          type: integer
+        answered_items:
+          type: integer
+        correct_items:
+          type: integer
+        status:
+          type: string
+      required:
+      - answered_items
+      - correct_items
+      - current_position
+      - exam_slug
+      - id
+      - mode
+      - status
+      - total_items
+    PracticeSessionCreateRequest:
+      type: object
+      properties:
+        exam_slug:
+          type: string
+          minLength: 1
+          default: mb-230
+          pattern: ^[-a-zA-Z0-9_]+$
+        mode:
+          allOf:
+          - $ref: '#/components/schemas/ModeEnum'
+          default: sequential
+        from_order:
+          type: integer
+          minimum: 1
+          default: 1
+        to_order:
+          type: integer
+          minimum: 1
+          nullable: true
+    QuestionPage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuestionPublic'
+        next_after_order:
+          type: integer
+          nullable: true
+        count:
+          type: integer
+      required:
+      - count
+      - data
+      - next_after_order
+    QuestionPublic:
+      type: object
+      properties:
+        id:
+          type: string
+          maxLength: 40
+        exam_slug:
+          type: string
+        pdf_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        source_question_number:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        question_type:
+          type: string
+          maxLength: 32
+        language:
+          type: string
+          maxLength: 8
+        prompt_text:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/Option'
+        interaction: {}
+        question_media:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+        source_pages:
+          type: object
+          additionalProperties:
+            type: integer
+          readOnly: true
+      required:
+      - exam_slug
+      - id
+      - options
+      - pdf_order
+      - prompt_text
+      - question_media
+      - question_type
+      - source_pages
+      - source_question_number
+    Reference:
+      type: object
+      properties:
+        position:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        raw_text:
+          type: string
+        url:
+          type: string
+          nullable: true
+      required:
+      - position
+      - raw_text
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
