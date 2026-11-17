@@ -40,4 +40,15 @@ export class PracticeApiService {
       { headers }
     );
   }
+
+  discardAnswer(
+    sessionId: string,
+    questionId: string,
+    action: 'skip' | 'repeat'
+  ): Observable<PracticeSession> {
+    return this.http.post<PracticeSession>(
+      `${this.baseUrl}/${sessionId}/answers/disposition`,
+      { question_id: questionId, action }
+    );
+  }
 }

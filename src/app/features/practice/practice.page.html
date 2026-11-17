@@ -101,7 +101,11 @@
               </section>
             }
             @if (result.answer_media.length) { <details class="source-details"><summary>Ver material original de respuesta</summary><app-question-media [media]="result.answer_media" alt="Material original de la respuesta" /></details> }
-            <button class="btn btn--primary next-button" type="button" (click)="next()">{{ result.session_status === 'completed' ? 'Ver resumen' : 'Guardar y continuar' }} →</button>
+            <div class="feedback-actions">
+              <button class="btn btn--primary" type="button" [disabled]="transitioning()" (click)="next()">{{ result.session_status === 'completed' ? 'Guardar y ver resumen' : 'Guardar y continuar' }} →</button>
+              <button class="btn btn--ghost" type="button" [disabled]="transitioning()" (click)="discardAndContinue('skip')">Siguiente sin guardar</button>
+              <button class="repeat-button" type="button" [disabled]="transitioning()" (click)="discardAndContinue('repeat')">↻ Repetir pregunta</button>
+            </div>
           </section>
         }
       }

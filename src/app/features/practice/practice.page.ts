@@ -34,6 +34,7 @@ export class PracticePage {
   protected readonly selectedKeys = signal<string[]>([]);
   protected readonly loading = signal(true);
   protected readonly submitting = signal(false);
+  protected readonly transitioning = signal(false);
   protected readonly showSummary = signal(false);
   protected readonly panelCollapsed = signal(this.readPanelPreference());
   protected readonly typeLabels = QUESTION_TYPE_LABELS;
@@ -124,6 +125,30 @@ export class PracticePage {
     this.selectedKeys.set([]);
     this.idempotencyKey = crypto.randomUUID();
     this.loadCurrent();
+  }
+
+  protected discardAndContinue(action: 'skip' | 'repeat'): void {
+    const currentQuestion = this.question();
+    if (!currentQuestion || !this.feedback() || this.transitioning()) return;
+    this.transitioning.set(true);
+    this.practiceApi
+      .discardAnswer(this.sessionId, currentQuestion.id, action)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.transitioning.set(false))
+      )
+      .subscribe((session) => {
+        this.session.set(session);
+        this.feedback.set(null);
+        this.selectedKeys.set([]);
+        this.idempotencyKey = crypto.randomUUID();
+        if (action === 'skip' && session.status === 'completed') {
+          this.showSummary.set(true);
+          this.storage.clear();
+          return;
+        }
+        this.loadCurrent();
+      });
   }
 
   private loadCurrent(): void {

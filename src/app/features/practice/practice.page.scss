@@ -67,7 +67,7 @@
 .option--incorrect { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, var(--surface)); }
 .option--incorrect .option__key { background: var(--danger); color: white; }
 .selection-hint { margin: .7rem 0 0; color: var(--slate); font-size: .7rem; }
-.answer-button, .next-button { width: 100%; margin-top: 1.4rem; }
+.answer-button { width: 100%; margin-top: 1.4rem; }
 .reveal-note { display: flex; gap: .8rem; margin-top: 1.4rem; padding: 1rem; border-radius: .9rem; background: var(--surface-soft); }
 .reveal-note p { margin: .2rem 0 0; color: var(--slate); }
 .feedback { margin-top: 1.2rem; padding: clamp(1.2rem, 3vw, 2.2rem); }
@@ -88,6 +88,11 @@
 .comment-translation strong { margin-right: .35rem; color: var(--success); }
 .source-details { margin-top: 1rem; }
 .source-details summary { padding: .8rem 0; font-weight: 700; cursor: pointer; }
+.feedback-actions { display: grid; grid-template-columns: 1fr 1fr auto; gap: .7rem; margin-top: 1.4rem; }
+.feedback-actions .btn { width: 100%; }
+.repeat-button { min-height: 48px; padding: .75rem 1rem; border: 0; background: transparent; color: var(--slate); font-weight: 800; cursor: pointer; }
+.repeat-button:hover:not(:disabled) { color: var(--ink); }
+.repeat-button:disabled { opacity: .5; cursor: not-allowed; }
 .question-skeleton { display: grid; gap: .8rem; padding: 3rem; }
 .question-skeleton .skeleton { height: 15px; }.question-skeleton .short { width: 22%; }.question-skeleton .title { width: 82%; height: 24px; }.question-skeleton .option { height: 62px; }
 .summary-card { padding: clamp(2rem, 6vw, 5rem); text-align: center; }
@@ -107,6 +112,7 @@
   .session-panel dl div { display: grid; gap: .2rem; padding: .2rem; border: 0; }
   .practice-main { width: min(100% - 1.25rem, 1120px); padding: 1rem 0 4rem; }
   .exam-toolbar::after { display: none; }
+  .feedback-actions { grid-template-columns: 1fr; }
 }
 @media (max-width: 575.98px) {
   .exam-toolbar { align-items: flex-start; }
