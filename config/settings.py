@@ -22,6 +22,9 @@ ALLOWED_HOSTS = [
     for item in os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
     if item.strip()
 ]
+render_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if render_hostname and render_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_hostname)
 
 INSTALLED_APPS = [
     "django.contrib.admin",

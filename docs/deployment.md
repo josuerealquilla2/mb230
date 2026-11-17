@@ -48,3 +48,15 @@ Recomendaciones:
 - Guarda la base de datos y los medios en almacenamiento persistente.
 - No es necesario incluir el PDF original en el servidor: basta el dataset canónico y `data/media`.
 
+## Render + Neon
+
+El repositorio incluye `render.yaml` y `build.sh`. En Render, crea un Blueprint desde la rama
+`backend` y proporciona `DATABASE_URL` con la cadena de conexión PostgreSQL agrupada (pooled) de
+Neon. El servicio ejecuta migraciones e importa el dataset y sus traducciones antes de arrancar.
+
+Cuando Render entregue la URL pública, comprueba:
+
+```text
+https://TU-SERVICIO.onrender.com/health/ready
+https://TU-SERVICIO.onrender.com/docs/
+```
