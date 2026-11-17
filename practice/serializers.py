@@ -93,6 +93,13 @@ class QuestionPageSerializer(serializers.Serializer):
     count = serializers.IntegerField()
 
 
+class TopicSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    label = serializers.CharField()
+    description = serializers.CharField()
+    question_count = serializers.IntegerField()
+
+
 class ExamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exam
@@ -167,6 +174,19 @@ class AnswerFeedbackSerializer(serializers.Serializer):
     answer_media = MediaSerializer(many=True)
     session_status = serializers.CharField()
     next_position = serializers.IntegerField(allow_null=True)
+
+
+class QuestionFeedbackSerializer(serializers.Serializer):
+    question_id = serializers.CharField()
+    is_correct = serializers.BooleanField(allow_null=True)
+    grading_mode = serializers.CharField()
+    source_answer = serializers.JSONField()
+    source_answer_raw = serializers.CharField(allow_blank=True)
+    explanation_raw = serializers.CharField(allow_blank=True)
+    community_discussion_raw = serializers.CharField(allow_blank=True)
+    references = ReferenceSerializer(many=True)
+    community_comments = CommunityCommentSerializer(many=True)
+    answer_media = MediaSerializer(many=True)
 
 
 class HealthSerializer(serializers.Serializer):

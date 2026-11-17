@@ -95,6 +95,22 @@ def build_feedback(
     }
 
 
+def build_question_feedback(question: Question, response: dict[str, Any]) -> dict[str, Any]:
+    answer_media = [media for media in question.media.all() if media.role in ANSWER_MEDIA_ROLES]
+    return {
+        "question_id": question.id,
+        "is_correct": grade(question, response),
+        "grading_mode": question.interaction.get("grading_mode", "reveal_only"),
+        "source_answer": question.source_answer,
+        "source_answer_raw": question.source_answer_raw,
+        "explanation_raw": question.explanation_raw,
+        "community_discussion_raw": question.community_discussion_raw,
+        "references": question.references.all(),
+        "community_comments": question.community_comments.all(),
+        "answer_media": answer_media,
+    }
+
+
 @transaction.atomic
 def submit_answer(
     session_id,

@@ -181,6 +181,40 @@ def test_visual_question_has_public_question_asset(client: APIClient) -> None:
 
 
 @pytest.mark.django_db
+def test_topic_practice_filters_and_checks_without_saving_progress(client: APIClient) -> None:
+    from practice.models import PracticeSession, SessionItem
+
+    topics = client.get("/api/v1/exams/mb-230/topics")
+    assert topics.status_code == 200
+    assert next(item for item in topics.json() if item["id"] == "routing")["question_count"] > 0
+
+    filtered = client.get("/api/v1/exams/mb-230/questions", {"topic": "routing", "limit": 5})
+    assert filtered.status_code == 200
+    assert filtered.json()["data"]
+
+    checked = client.post(
+        "/api/v1/questions/mb230-q0001/check",
+        {"question_id": "mb230-q0001", "response": {"choice_keys": ["B"]}},
+        format="json",
+    )
+    assert checked.status_code == 200
+    assert checked.json()["is_correct"] is True
+    assert PracticeSession.objects.count() == 0
+    assert SessionItem.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_saved_questions_belong_to_the_user(client: APIClient) -> None:
+    authenticate(client, "bookmarks")
+    saved = client.put("/api/v1/me/saved-questions/mb230-q0001", {}, format="json")
+    assert saved.status_code == 201
+    listing = client.get("/api/v1/me/saved-questions")
+    assert [item["id"] for item in listing.json()] == ["mb230-q0001"]
+    removed = client.delete("/api/v1/me/saved-questions/mb230-q0001")
+    assert removed.status_code == 204
+
+
+@pytest.mark.django_db
 def test_openapi_and_ready_health(client: APIClient) -> None:
     ready = client.get("/health/ready")
     schema = client.get("/api/schema/")

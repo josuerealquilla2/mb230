@@ -181,3 +181,17 @@ class SessionItem(models.Model):
                 fields=["session", "question"], name="uq_session_item_question"
             ),
         ]
+
+
+class SavedQuestion(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="saved_questions", on_delete=models.CASCADE
+    )
+    question = models.ForeignKey(Question, related_name="saved_by", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["question__pdf_order"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "question"], name="uq_saved_question_user")
+        ]

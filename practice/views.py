@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from practice.exceptions import Conflict
-from practice.models import Exam, PracticeSession, Question, SessionItem
+from practice.models import Exam, PracticeSession, Question, SavedQuestion, SessionItem
 from practice.serializers import (
     AnswerFeedbackSerializer,
     AnswerDispositionSerializer,
@@ -22,18 +22,22 @@ from practice.serializers import (
     PracticeSessionCreateSerializer,
     PracticeSessionSerializer,
     QuestionPageSerializer,
+    QuestionFeedbackSerializer,
     QuestionPublicSerializer,
     RegisterSerializer,
     UserPreferenceSerializer,
     UserSerializer,
+    TopicSerializer,
 )
 from practice.services import (
     create_practice_session,
+    build_question_feedback,
     discard_answer,
     question_queryset,
     session_summary,
     submit_answer,
 )
+from practice.topics import TOPICS, get_topic, topic_query
 
 QUESTION_TYPES = {"single_choice", "multiple_choice", "yes_no", "drag_drop", "hotspot"}
 
@@ -85,6 +89,7 @@ class QuestionListView(APIView):
                 OpenApiTypes.INT,
                 description="Devuelve preguntas posteriores a este orden",
             ),
+            OpenApiParameter("topic", OpenApiTypes.STR, description="Identificador del tema"),
             OpenApiParameter("limit", OpenApiTypes.INT, description="Cantidad entre 1 y 100"),
             OpenApiParameter(
                 "question_type",
@@ -110,7 +115,14 @@ class QuestionListView(APIView):
                 f"question_type debe ser uno de: {', '.join(sorted(QUESTION_TYPES))}."
             )
 
+        topic_id = request.query_params.get("topic")
+        topic = get_topic(topic_id) if topic_id else None
+        if topic_id and topic is None:
+            raise ValidationError("El tema solicitado no existe.")
+
         queryset = question_queryset().filter(exam=exam, pdf_order__gt=after_order)
+        if topic:
+            queryset = queryset.filter(topic_query(topic)).distinct()
         if question_type:
             queryset = queryset.filter(question_type=question_type)
         questions = list(queryset.order_by("pdf_order")[: limit + 1])
@@ -126,6 +138,25 @@ class QuestionListView(APIView):
         return Response(payload)
 
 
+class TopicListView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(responses=TopicSerializer(many=True))
+    def get(self, request: Request, slug: str) -> Response:
+        exam = get_object_or_404(Exam, slug=slug)
+        base = Question.objects.filter(exam=exam)
+        payload = [
+            {
+                "id": topic.id,
+                "label": topic.label,
+                "description": topic.description,
+                "question_count": base.filter(topic_query(topic)).distinct().count(),
+            }
+            for topic in TOPICS
+        ]
+        return Response(TopicSerializer(payload, many=True).data)
+
+
 class QuestionDetailView(APIView):
     permission_classes = [AllowAny]
     @extend_schema(responses=QuestionPublicSerializer)
@@ -135,6 +166,46 @@ class QuestionDetailView(APIView):
         except Question.DoesNotExist as exc:
             raise NotFound("Pregunta no encontrada.") from exc
         return Response(QuestionPublicSerializer(question, context={"request": request}).data)
+
+
+class QuestionCheckView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(request=AnswerSubmissionSerializer, responses=QuestionFeedbackSerializer)
+    def post(self, request: Request, question_id: str) -> Response:
+        serializer = AnswerSubmissionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if serializer.validated_data["question_id"] != question_id:
+            raise ValidationError("La respuesta no corresponde a la pregunta indicada.")
+        try:
+            question = question_queryset().get(pk=question_id)
+        except Question.DoesNotExist as exc:
+            raise NotFound("Pregunta no encontrada.") from exc
+        feedback = build_question_feedback(question, serializer.validated_data["response"])
+        return Response(QuestionFeedbackSerializer(feedback, context={"request": request}).data)
+
+
+class SavedQuestionListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(responses=QuestionPublicSerializer(many=True))
+    def get(self, request: Request) -> Response:
+        ids = SavedQuestion.objects.filter(user=request.user).values_list("question_id", flat=True)
+        questions = question_queryset().filter(pk__in=ids).order_by("pdf_order")
+        return Response(QuestionPublicSerializer(questions, many=True, context={"request": request}).data)
+
+
+class SavedQuestionDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request: Request, question_id: str) -> Response:
+        question = get_object_or_404(Question, pk=question_id)
+        _, created = SavedQuestion.objects.get_or_create(user=request.user, question=question)
+        return Response({"saved": True}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+    def delete(self, request: Request, question_id: str) -> Response:
+        SavedQuestion.objects.filter(user=request.user, question_id=question_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class PracticeSessionCreateView(APIView):
