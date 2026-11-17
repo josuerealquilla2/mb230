@@ -154,3 +154,53 @@ def submit_answer(
         session.current_position += 1
         session.save(update_fields=["current_position"])
     return build_feedback(session, item, question, request)
+
+
+@transaction.atomic
+def discard_answer(
+    session_id,
+    *,
+    question_id: str,
+    repeat: bool,
+    owner=None,
+) -> dict[str, Any]:
+    try:
+        session = (
+            PracticeSession.objects.select_for_update()
+            .select_related("exam")
+            .get(pk=session_id, owner=owner)
+        )
+    except PracticeSession.DoesNotExist as exc:
+        raise NotFound("Sesión de práctica no encontrada.") from exc
+
+    try:
+        item = SessionItem.objects.select_for_update().get(
+            session=session, question_id=question_id, answered=True
+        )
+    except SessionItem.DoesNotExist as exc:
+        raise ValidationError("La pregunta no tiene una respuesta guardada.") from exc
+
+    is_latest = item.position == session.current_position - 1
+    is_completed_latest = (
+        session.status == PracticeSession.Status.COMPLETED
+        and item.position == session.current_position == session.total_items
+    )
+    if not (is_latest or is_completed_latest):
+        raise ValidationError("Solo puedes cambiar el resultado de la pregunta actual.")
+
+    item.answered = False
+    item.response = None
+    item.is_correct = None
+    item.idempotency_key = None
+    item.answered_at = None
+    item.save(
+        update_fields=["answered", "response", "is_correct", "idempotency_key", "answered_at"]
+    )
+
+    if repeat:
+        session.current_position = item.position
+        session.status = PracticeSession.Status.ACTIVE
+        session.completed_at = None
+        session.save(update_fields=["current_position", "status", "completed_at"])
+
+    return session_summary(session)

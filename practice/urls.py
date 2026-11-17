@@ -8,6 +8,7 @@ from practice.views import (
     LogoutView,
     MeView,
     PracticeSessionAnswerView,
+    PracticeSessionAnswerDispositionView,
     PracticeSessionCreateView,
     PracticeSessionDetailView,
     PracticeSessionNextView,
@@ -47,5 +48,10 @@ urlpatterns = [
         "api/v1/practice-sessions/<uuid:session_id>/answers",
         PracticeSessionAnswerView.as_view(),
         name="session-answer",
+    ),
+    path(
+        "api/v1/practice-sessions/<uuid:session_id>/answers/disposition",
+        PracticeSessionAnswerDispositionView.as_view(),
+        name="session-answer-disposition",
     ),
 ]

@@ -13,6 +13,7 @@ from practice.exceptions import Conflict
 from practice.models import Exam, PracticeSession, Question, SessionItem
 from practice.serializers import (
     AnswerFeedbackSerializer,
+    AnswerDispositionSerializer,
     AnswerSubmissionSerializer,
     AuthResponseSerializer,
     ExamSerializer,
@@ -28,6 +29,7 @@ from practice.serializers import (
 )
 from practice.services import (
     create_practice_session,
+    discard_answer,
     question_queryset,
     session_summary,
     submit_answer,
@@ -221,6 +223,23 @@ class PracticeSessionAnswerView(APIView):
             owner=request.user,
         )
         return Response(AnswerFeedbackSerializer(feedback, context={"request": request}).data)
+
+
+class PracticeSessionAnswerDispositionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(request=AnswerDispositionSerializer, responses=PracticeSessionSerializer)
+    def post(self, request: Request, session_id) -> Response:  # type: ignore[no-untyped-def]
+        serializer = AnswerDispositionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        summary = discard_answer(
+            session_id,
+            question_id=data["question_id"],
+            repeat=data["action"] == "repeat",
+            owner=request.user,
+        )
+        return Response(PracticeSessionSerializer(summary).data)
 
 
 class RegisterView(APIView):

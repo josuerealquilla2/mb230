@@ -89,6 +89,51 @@ def test_sequential_practice_reveals_feedback_after_answer(client: APIClient) ->
     assert second.json()["id"] == "mb230-q0002"
 
 
+@pytest.mark.django_db(transaction=True)
+def test_answer_can_be_skipped_or_repeated_without_counting(client: APIClient) -> None:
+    authenticate(client, "review-actions")
+    created = client.post(
+        "/api/v1/practice-sessions",
+        {"exam_slug": "mb-230", "from_order": 1, "to_order": 3},
+        format="json",
+    )
+    session_id = created.json()["id"]
+
+    first_answer = client.post(
+        f"/api/v1/practice-sessions/{session_id}/answers",
+        {"question_id": "mb230-q0001", "response": {"choice_keys": ["B"]}},
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="skip-q1",
+    )
+    assert first_answer.status_code == 200
+    skipped = client.post(
+        f"/api/v1/practice-sessions/{session_id}/answers/disposition",
+        {"question_id": "mb230-q0001", "action": "skip"},
+        format="json",
+    )
+    assert skipped.status_code == 200
+    assert skipped.json()["answered_items"] == 0
+    assert skipped.json()["current_position"] == 2
+
+    second_answer = client.post(
+        f"/api/v1/practice-sessions/{session_id}/answers",
+        {"question_id": "mb230-q0002", "response": {"choice_keys": ["B"]}},
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="repeat-q2",
+    )
+    assert second_answer.status_code == 200
+    repeated = client.post(
+        f"/api/v1/practice-sessions/{session_id}/answers/disposition",
+        {"question_id": "mb230-q0002", "action": "repeat"},
+        format="json",
+    )
+    assert repeated.status_code == 200
+    assert repeated.json()["answered_items"] == 0
+    assert repeated.json()["current_position"] == 2
+    current = client.get(f"/api/v1/practice-sessions/{session_id}/next")
+    assert current.json()["id"] == "mb230-q0002"
+
+
 @pytest.mark.django_db
 def test_account_preferences_and_session_resume_are_private(client: APIClient) -> None:
     authenticate(client, "joaquin")

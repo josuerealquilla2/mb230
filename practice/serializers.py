@@ -131,6 +131,11 @@ class AnswerSubmissionSerializer(serializers.Serializer):
     response = serializers.JSONField(default=dict)
 
 
+class AnswerDispositionSerializer(serializers.Serializer):
+    question_id = serializers.CharField(max_length=40)
+    action = serializers.ChoiceField(choices=("skip", "repeat"))
+
+
 class ReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reference
