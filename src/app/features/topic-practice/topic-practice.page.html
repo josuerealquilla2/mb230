@@ -1,0 +1,32 @@
+<section class="topic-shell">
+  <header class="topic-header"><span>Práctica enfocada</span><h1>Entrena por temas</h1><p>Elige lo que quieres priorizar. Este modo comprueba tus respuestas sin guardar resultados ni modificar tu recorrido.</p></header>
+  <form class="topic-picker" [formGroup]="form" (ngSubmit)="start()">
+    <label for="topic">Tema</label><select id="topic" formControlName="topic">
+      @for (topic of topics(); track topic.id) { <option [value]="topic.id">{{ topic.label }} · {{ topic.question_count }}</option> }
+    </select><button type="submit" [disabled]="loading()">{{ loading() ? 'Cargando…' : 'Comenzar test' }}</button>
+  </form>
+
+  @if (current(); as question) {
+    <article class="test-card">
+      <div class="test-meta"><span>Pregunta {{ index() + 1 }} de {{ questions().length }}</span><span>#{{ question.pdf_order }}</span>
+        @if (auth.isAuthenticated()) { <button class="save-button" type="button" (click)="toggleSaved()">{{ savedIds().has(question.id) ? '★ Guardada' : '☆ Guardar' }}</button> }
+      </div>
+      <div class="language-grid"><div><small>EN · Original</small><p>{{ question.prompt_text }}</p></div><div><small>ES · Traducción</small><p>{{ question.prompt_text_es || 'Traducción no disponible.' }}</p></div></div>
+      <app-question-media [media]="question.question_media" [alt]="'Pregunta ' + question.pdf_order" />
+      @if (question.options.length) {
+        <div class="answers">@for (option of question.options; track option.key) { <button type="button" [class.selected]="selected().includes(option.key)" (click)="select(option.key, question.question_type)"><b>{{ option.key }}</b><span>{{ option.text }}<small>{{ option.text_es }}</small></span></button> }</div>
+      } @else { <p class="visual-note">Pregunta visual original. Observa o realiza mentalmente la interacción y revela la solución cuando estés listo.</p> }
+      @if (!feedback()) { <button class="check-button" type="button" (click)="check()" [disabled]="checking() || (question.interaction.grading_mode === 'automatic' && !selected().length)">{{ question.interaction.grading_mode === 'automatic' ? 'Comprobar respuesta' : 'Revelar solución' }}</button> }
+      @if (feedback(); as result) {
+        <section class="feedback" [class.correct]="result.is_correct === true" [class.wrong]="result.is_correct === false">
+          <h2>{{ result.is_correct === true ? 'Respuesta correcta' : result.is_correct === false ? 'Vamos a revisarlo' : 'Solución original' }}</h2>
+          <p><b>Respuesta publicada:</b> {{ result.source_answer_raw || result.source_answer.option_keys.join(', ') }}</p>
+          @if (result.explanation_raw) { <p>{{ result.explanation_raw }}</p> }
+          <app-question-media [media]="result.answer_media" alt="Solución visual original" />
+          @if (result.community_comments.length) { <details><summary>Opiniones de la comunidad ({{ result.community_comments.length }})</summary>@for (comment of result.community_comments; track comment.position) { <div class="comment"><p>{{ comment.raw_text }}</p><small>{{ comment.raw_text_es }}</small></div> }</details> }
+        </section>
+        <button class="next-button" type="button" (click)="next()" [disabled]="index() === questions().length - 1">Siguiente pregunta →</button>
+      }
+    </article>
+  } @else if (!loading()) { <div class="empty"><h2>Selecciona un tema para empezar</h2><p>Las preguntas aparecerán en el orden original del PDF.</p></div> }
+</section>

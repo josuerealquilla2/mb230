@@ -54,6 +54,14 @@ export interface QuestionFilters {
   afterOrder?: number;
   limit?: number;
   questionType?: QuestionType | '';
+  topic?: string;
+}
+
+export interface QuestionTopic {
+  id: string;
+  label: string;
+  description: string;
+  question_count: number;
 }
 
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {

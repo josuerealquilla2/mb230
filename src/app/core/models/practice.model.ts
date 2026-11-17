@@ -52,3 +52,5 @@ export interface AnswerFeedback {
   session_status: 'active' | 'completed';
   next_position: number | null;
 }
+
+export type QuestionFeedback = Omit<AnswerFeedback, 'session_status' | 'next_position'>;

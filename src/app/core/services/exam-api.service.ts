@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { Exam } from '../models/exam.model';
-import { Question, QuestionFilters, QuestionPage } from '../models/question.model';
+import { Question, QuestionFilters, QuestionPage, QuestionTopic } from '../models/question.model';
+import { QuestionFeedback } from '../models/practice.model';
 
 @Injectable({ providedIn: 'root' })
 export class ExamApiService {
@@ -26,7 +27,30 @@ export class ExamApiService {
     if (filters.questionType) {
       params = params.set('question_type', filters.questionType);
     }
+    if (filters.topic) params = params.set('topic', filters.topic);
     return this.http.get<QuestionPage>(`${this.baseUrl}/exams/${slug}/questions`, { params });
   }
-}
 
+  getTopics(slug = 'mb-230'): Observable<QuestionTopic[]> {
+    return this.http.get<QuestionTopic[]>(`${this.baseUrl}/exams/${slug}/topics`);
+  }
+
+  checkQuestion(questionId: string, choiceKeys: string[]): Observable<QuestionFeedback> {
+    return this.http.post<QuestionFeedback>(`${this.baseUrl}/questions/${questionId}/check`, {
+      question_id: questionId,
+      response: { choice_keys: choiceKeys }
+    });
+  }
+
+  getSavedQuestions(): Observable<Question[]> {
+    return this.http.get<Question[]>(`${this.baseUrl}/me/saved-questions`);
+  }
+
+  saveQuestion(questionId: string): Observable<{ saved: boolean }> {
+    return this.http.put<{ saved: boolean }>(`${this.baseUrl}/me/saved-questions/${questionId}`, {});
+  }
+
+  removeSavedQuestion(questionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/me/saved-questions/${questionId}`);
+  }
+}

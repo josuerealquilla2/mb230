@@ -18,6 +18,17 @@ export const routes: Routes = [
     loadComponent: () => import('./features/questions/questions.page').then((m) => m.QuestionsPage)
   },
   {
+    path: 'topics',
+    title: 'Práctica por temas · MB-230 Focus',
+    loadComponent: () => import('./features/topic-practice/topic-practice.page').then((m) => m.TopicPracticePage)
+  },
+  {
+    path: 'saved',
+    title: 'Preguntas guardadas · MB-230 Focus',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/saved-questions/saved-questions.page').then((m) => m.SavedQuestionsPage)
+  },
+  {
     path: 'practice/:sessionId',
     title: 'Sesión de práctica · MB-230 Focus',
     canActivate: [authGuard],
