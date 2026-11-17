@@ -31,6 +31,7 @@ export class HomePage {
 
   protected readonly exam = signal<Exam | null>(null);
   protected readonly loading = signal(true);
+  protected readonly apiUnavailable = signal(false);
   protected readonly starting = signal(false);
   protected readonly activeSessionId = signal(this.storage.get());
   protected readonly activeSessions = signal<PracticeSession[]>([]);
@@ -46,7 +47,16 @@ export class HomePage {
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.loading.set(false))
       )
-      .subscribe((exam) => this.exam.set(exam));
+      .subscribe({
+        next: (exam) => {
+          if (this.isExam(exam)) {
+            this.exam.set(exam);
+            return;
+          }
+          this.apiUnavailable.set(true);
+        },
+        error: () => this.apiUnavailable.set(true)
+      });
     if (this.auth.isAuthenticated()) {
       this.practiceApi.getSessions().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((sessions) => {
         this.activeSessions.set(sessions.filter((item) => item.status === 'active'));
@@ -90,5 +100,16 @@ export class HomePage {
         this.storage.save(session.id);
         void this.router.navigate(['/practice', session.id]);
       });
+  }
+
+  private isExam(value: unknown): value is Exam {
+    if (!value || typeof value !== 'object') return false;
+    const candidate = value as Partial<Exam>;
+    return (
+      candidate.slug === 'mb-230' &&
+      typeof candidate.title === 'string' &&
+      typeof candidate.description === 'string' &&
+      typeof candidate.question_count === 'number'
+    );
   }
 }
