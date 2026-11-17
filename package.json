@@ -7,6 +7,7 @@
     "build": "ng build",
     "build:production": "ng build --configuration production",
     "build:vercel": "node scripts/configure-api.mjs && ng build --configuration production",
+    "build:cloudflare": "node scripts/configure-api.mjs && ng build --configuration production",
     "test": "ng test --watch=false"
   },
   "dependencies": {

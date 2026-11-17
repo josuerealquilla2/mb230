@@ -58,6 +58,12 @@ CSRF_TRUSTED_ORIGINS = [
 
 Cada cambio enviado a la rama principal generará un despliegue nuevo. Las pull requests también pueden generar vistas previas gratuitas.
 
+## Publicar el frontend en Cloudflare Pages
+
+Conecta el repositorio de GitHub y selecciona la rama `frontend`. Usa `npm run build:cloudflare` como comando de compilación y `dist/mb230-practice-frontend` como directorio de salida. Añade la variable `API_URL` con la URL HTTPS pública del backend Django, terminada en `/api/v1`. El archivo `public/_redirects` permite recargar rutas internas de Angular sin errores 404.
+
+Si la cuenta muestra únicamente el flujo nuevo de Cloudflare Workers, utiliza `npm run build:cloudflare` como Build command y `npx wrangler deploy` como Deploy command. El archivo `wrangler.jsonc` publica el contenido de `dist/mb230-practice-frontend` como recursos estáticos y configura la navegación SPA.
+
 ## Organización
 
 ```text

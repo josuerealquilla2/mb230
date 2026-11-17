@@ -1,0 +1,8 @@
+{
+  "name": "mb230",
+  "compatibility_date": "2026-11-17",
+  "assets": {
+    "directory": "./dist/mb230-practice-frontend",
+    "not_found_handling": "single-page-application"
+  }
+}
